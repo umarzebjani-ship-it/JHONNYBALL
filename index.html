@@ -3,650 +3,525 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JHONNYBALL – Celebrity Contest Simulator</title>
+    <title>JHONNYBALL - Celebrity Simulator</title>
     <style>
-        :root {
-            --bg: #0a0a14;
-            --accent: #ff3366;
-            --accent2: #00d4ff;
-            --gold: #ffb800;
-            --green: #4ade80;
-            --purple: #a855f7;
-            --panel: rgba(10, 10, 20, 0.95);
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            background: #06060e;
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: #000;
+            font-family: Arial, sans-serif;
             overflow: hidden;
             height: 100vh;
             width: 100vw;
             user-select: none;
             -webkit-user-select: none;
-            -webkit-tap-highlight-color: transparent;
-            touch-action: manipulation;
-            display: flex;
-            justify-content: center;
-            align-items: center;
         }
-
-        #appContainer {
-            position: relative;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        #appContainer.desktop-view {
-            width: 100%;
-            height: 100%;
-        }
-        #appContainer.mobile-view {
-            width: 390px;
-            height: 844px;
-            max-width: 95vw;
-            max-height: 90vh;
-            border-radius: 40px;
-            overflow: hidden;
-            box-shadow: 0 0 0 8px #1a1a2e, 0 0 0 10px #333, 0 20px 60px rgba(0,0,0,0.8);
-        }
-        #appContainer.fullscreen-view {
-            width: 100vw;
-            height: 100vh;
-            position: fixed;
-            top: 0;
-            left: 0;
-            z-index: 9999;
-        }
-
-        #gameWrapper {
-            position: relative;
-            width: 100%;
-            height: 100%;
-            background: #06060e;
-            overflow: hidden;
-        }
-
-        canvas {
-            display: block;
+        canvas { 
+            display: block; 
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
             cursor: pointer;
         }
-
-        /* ============ VIEW SELECTOR ============ */
-        #viewSelector {
+        
+        /* Top bar */
+        .top-bar {
             position: fixed;
-            top: 12px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 200;
-            background: var(--panel);
-            border-radius: 25px;
-            padding: 5px;
+            top: 10px;
+            left: 10px;
+            right: 10px;
+            z-index: 10;
             display: flex;
-            gap: 2px;
-            border: 1px solid rgba(255,255,255,0.15);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            box-shadow: 0 8px 32px rgba(0,0,0,0.5);
-        }
-        .view-btn {
-            padding: 10px 18px;
-            border: none;
-            background: transparent;
-            color: #999;
-            border-radius: 22px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 0.78em;
-            letter-spacing: 0.5px;
-            transition: all 0.3s;
-            white-space: nowrap;
-            font-family: inherit;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .view-btn:hover {
-            color: #fff;
-            background: rgba(255,255,255,0.08);
-        }
-        .view-btn.active {
-            background: var(--accent);
-            color: #fff;
-            box-shadow: 0 4px 15px rgba(255,51,102,0.4);
-        }
-
-        /* ============ TOP BAR ============ */
-        #topBar {
-            position: absolute;
-            top: 60px;
-            left: 0;
-            right: 0;
-            z-index: 100;
-            padding: 8px 16px;
-            display: flex;
-            align-items: center;
             justify-content: space-between;
-            background: linear-gradient(180deg, rgba(0,0,0,0.85) 60%, transparent 100%);
-            pointer-events: none;
-            transition: top 0.3s;
-        }
-        #topBar>* {
-            pointer-events: auto;
-        }
-        #logo {
-            font-size: 1.3em;
-            font-weight: 900;
-            color: #fff;
-            letter-spacing: 1px;
-        }
-        #logo span {
-            background: linear-gradient(135deg, var(--accent), var(--gold));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-        #statusDot {
-            display: inline-block;
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background: #4ade80;
-            margin-right: 6px;
-            box-shadow: 0 0 8px #4ade80;
-            vertical-align: middle;
-            transition: all 0.3s;
-        }
-        #statusDot.recording {
-            background: #ff0000;
-            box-shadow: 0 0 12px #ff0000;
-            animation: dotPulse 0.6s infinite;
-        }
-        @keyframes dotPulse {
-            0%,100% { opacity: 1; }
-            50% { opacity: 0.3; }
-        }
-        #statusText {
-            color: #ccc;
-            font-size: 0.75em;
-            font-weight: 600;
-            letter-spacing: 0.5px;
-        }
-
-        /* ============ CONTEST LEADERBOARD ============ */
-        #leaderboard {
-            position: absolute;
-            top: 110px;
-            right: 16px;
-            z-index: 100;
-            background: var(--panel);
-            border-radius: 16px;
-            padding: 12px 16px;
-            border: 1px solid rgba(255,255,255,0.15);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            min-width: 160px;
-            max-height: 300px;
-            overflow-y: auto;
-            display: none;
-        }
-        #leaderboard.visible {
-            display: block;
-        }
-        #leaderboard h3 {
-            color: var(--gold);
-            font-size: 0.8em;
-            text-align: center;
-            margin-bottom: 8px;
-            letter-spacing: 1px;
-        }
-        .lb-row {
-            display: flex;
             align-items: center;
-            gap: 8px;
-            padding: 4px 0;
-            color: #ccc;
-            font-size: 0.7em;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-        }
-        .lb-rank {
-            font-weight: 700;
-            color: var(--gold);
-            width: 18px;
-        }
-        .lb-name {
-            flex: 1;
-        }
-        .lb-score {
-            color: var(--accent2);
-            font-weight: 600;
-        }
-        .lb-bar {
-            height: 3px;
-            border-radius: 2px;
-            background: var(--accent);
-            transition: width 0.5s;
-        }
-
-        /* ============ CONTEST MODE PANEL ============ */
-        #contestPanel {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 150;
-            background: var(--panel);
-            border-radius: 20px;
-            padding: 20px;
+            padding: 10px 15px;
+            background: rgba(0,0,0,0.8);
+            border-radius: 15px;
             border: 1px solid rgba(255,255,255,0.2);
-            backdrop-filter: blur(30px);
-            -webkit-backdrop-filter: blur(30px);
-            display: none;
-            flex-direction: column;
-            gap: 12px;
-            min-width: 300px;
-            max-width: 90vw;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.7);
         }
-        #contestPanel.visible {
-            display: flex;
-        }
-        #contestPanel h3 {
-            color: var(--gold);
-            text-align: center;
-            font-size: 1em;
-            letter-spacing: 1px;
-        }
-        .contest-option {
-            padding: 10px 16px;
-            border: 1px solid rgba(255,255,255,0.2);
-            background: rgba(255,255,255,0.03);
-            color: #ddd;
-            border-radius: 12px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 0.78em;
-            transition: all 0.2s;
-            text-align: left;
-            font-family: inherit;
-            width: 100%;
-        }
-        .contest-option:hover {
-            background: rgba(255,255,255,0.1);
-            border-color: var(--accent2);
-            color: #fff;
-        }
-        .contest-option.active-contest {
-            background: rgba(168,85,247,0.2);
-            border-color: var(--purple);
-            color: #fff;
-            box-shadow: 0 0 15px rgba(168,85,247,0.3);
-        }
-        .contest-close {
-            padding: 8px;
-            background: rgba(255,51,102,0.2);
-            border: 1px solid var(--accent);
-            color: #fff;
-            border-radius: 10px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 0.75em;
-            text-align: center;
-            font-family: inherit;
-        }
-
-        /* ============ DURATION SELECTOR ============ */
-        #durationPanel {
-            position: absolute;
-            top: 110px;
+        .logo { color: #fff; font-weight: bold; font-size: 1.2em; }
+        .logo span { color: #ff3366; }
+        .status { color: #4ade80; font-size: 0.8em; }
+        .status.recording { color: #ff0000; animation: pulse 0.5s infinite; }
+        @keyframes pulse { 50% { opacity: 0.5; } }
+        
+        /* Bottom controls */
+        .controls {
+            position: fixed;
+            bottom: 15px;
             left: 50%;
             transform: translateX(-50%);
-            z-index: 101;
-            background: var(--panel);
-            border-radius: 16px;
-            padding: 10px 14px;
+            z-index: 10;
             display: flex;
-            gap: 5px;
+            gap: 8px;
+            padding: 10px 15px;
+            background: rgba(0,0,0,0.8);
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.2);
             flex-wrap: wrap;
             justify-content: center;
-            border: 1px solid rgba(255,255,255,0.15);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            transition: all 0.25s ease;
-            opacity: 1;
-            pointer-events: auto;
         }
-        #durationPanel.hidden {
-            opacity: 0;
-            pointer-events: none;
-            transform: translateX(-50%) translateY(-8px);
-        }
-        .dur-btn {
-            padding: 7px 14px;
-            border: 1px solid rgba(255,255,255,0.2);
-            background: rgba(255,255,255,0.05);
-            color: #bbb;
+        button {
+            padding: 8px 16px;
+            border: 1px solid rgba(255,255,255,0.3);
+            background: rgba(255,255,255,0.1);
+            color: #fff;
             border-radius: 20px;
             cursor: pointer;
-            font-weight: 600;
-            font-size: 0.7em;
-            white-space: nowrap;
-            transition: all 0.2s;
-            font-family: inherit;
+            font-size: 0.8em;
+            font-weight: bold;
+            transition: 0.2s;
         }
-        .dur-btn:hover {
-            background: rgba(255,255,255,0.15);
-            color: #fff;
-        }
-        .dur-btn.active {
-            background: var(--accent2);
-            border-color: var(--accent2);
-            color: #fff;
-            box-shadow: 0 0 14px rgba(0,212,255,0.35);
-        }
-
-        /* ============ FRAME SELECTOR MODAL ============ */
-        #frameModal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 300;
-            background: rgba(0,0,0,0.9);
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 15px;
-        }
-        #frameModal.visible {
-            display: flex;
-        }
-        #framePreview {
-            max-width: 90vw;
-            max-height: 50vh;
-            border-radius: 12px;
-            border: 2px solid var(--accent);
-            box-shadow: 0 0 30px rgba(255,51,102,0.3);
-        }
-        #frameCanvas {
-            display: none;
-        }
-        .frame-controls {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-        .frame-btn {
-            padding: 12px 24px;
-            border: none;
-            border-radius: 25px;
-            cursor: pointer;
-            font-weight: 700;
-            font-size: 0.85em;
-            letter-spacing: 1px;
-            font-family: inherit;
-            transition: all 0.3s;
-        }
-        .frame-btn.download {
-            background: var(--green);
-            color: #000;
-        }
-        .frame-btn.download:hover {
-            box-shadow: 0 0 25px rgba(74,222,128,0.5);
-        }
-        .frame-btn.retry {
-            background: var(--accent2);
-            color: #000;
-        }
-        .frame-btn.cancel {
+        button:hover { background: rgba(255,255,255,0.2); }
+        button.record-btn { background: #ff3366; border-color: #ff3366; }
+        button.record-btn.recording { background: #ff0000; }
+        select {
+            padding: 8px 12px;
+            border-radius: 20px;
             background: rgba(255,255,255,0.1);
             color: #fff;
             border: 1px solid rgba(255,255,255,0.3);
-        }
-        #frameSlider {
-            width: 300px;
-            max-width: 80vw;
-            accent-color: var(--accent);
-        }
-        .frame-time {
-            color: var(--gold);
-            font-weight: 700;
-            font-size: 0.9em;
-        }
-
-        /* ============ BOTTOM CONTROLS ============ */
-        #controlsBar {
-            position: absolute;
-            bottom: 16px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 100;
-            background: var(--panel);
-            border-radius: 22px;
-            padding: 8px 12px;
-            display: flex;
-            gap: 5px;
-            align-items: center;
-            flex-wrap: wrap;
-            justify-content: center;
-            border: 1px solid rgba(255,255,255,0.12);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            max-width: 95vw;
-        }
-        .btn {
-            padding: 9px 14px;
-            border: 1px solid rgba(255,255,255,0.18);
-            background: rgba(255,255,255,0.04);
-            color: #ddd;
-            border-radius: 22px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 0.75em;
-            letter-spacing: 0.4px;
-            transition: all 0.2s;
-            white-space: nowrap;
-            font-family: inherit;
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-        }
-        .btn:active {
-            transform: scale(0.95);
-        }
-        .btn:hover {
-            background: rgba(255,255,255,0.1);
-            border-color: rgba(255,255,255,0.4);
-            color: #fff;
-        }
-        .btn.rec {
-            background: var(--accent);
-            border-color: var(--accent);
-            color: #fff;
-            font-weight: 700;
-        }
-        .btn.rec.active-rec {
-            background: #ff0000;
-            border-color: #ff0000;
-            animation: recGlow 0.7s infinite;
-        }
-        @keyframes recGlow {
-            0%,100% { box-shadow: 0 0 8px rgba(255,0,0,0.5); }
-            50% { box-shadow: 0 0 25px rgba(255,0,0,0.9); }
-        }
-        .btn.dur {
-            background: rgba(0,212,255,0.15);
-            border-color: rgba(0,212,255,0.4);
-            color: var(--accent2);
-        }
-        .btn.music-btn {
-            background: rgba(255,184,0,0.1);
-            border-color: rgba(255,184,0,0.3);
-            color: var(--gold);
-        }
-        .btn.music-btn.playing {
-            background: rgba(74,222,128,0.2);
-            border-color: rgba(74,222,128,0.5);
-            color: #4ade80;
-            box-shadow: 0 0 12px rgba(74,222,128,0.3);
-        }
-        .btn.contest-btn {
-            background: rgba(168,85,247,0.2);
-            border-color: rgba(168,85,247,0.4);
-            color: var(--purple);
-        }
-        .btn.contest-btn:hover {
-            box-shadow: 0 0 15px rgba(168,85,247,0.4);
-        }
-        .btn.lb-btn {
-            background: rgba(255,184,0,0.1);
-            border-color: rgba(255,184,0,0.3);
-            color: var(--gold);
-        }
-
-        #timerDisplay {
-            color: var(--gold);
-            font-weight: 700;
-            font-size: 0.82em;
-            min-width: 52px;
-            text-align: center;
-            font-family: 'SF Mono', 'Consolas', monospace;
-            font-variant-numeric: tabular-nums;
-        }
-        #timerDisplay.warn {
-            color: #ff4444;
-            animation: blink 0.4s infinite;
-        }
-        @keyframes blink { 50% { opacity: 0.2; } }
-        #speedSlider {
-            width: 55px;
-            accent-color: var(--accent);
-            height: 4px;
+            font-size: 0.8em;
             cursor: pointer;
         }
-        .speed-label {
-            color: #999;
-            font-size: 0.65em;
-        }
-
-        #musicInput, #imageInput {
-            display: none;
-        }
-
-        /* Score popup */
-        .score-popup {
-            position: absolute;
-            color: var(--gold);
-            font-weight: 900;
-            font-size: 1em;
-            pointer-events: none;
-            animation: scoreUp 1.5s forwards;
-            z-index: 90;
-        }
-        @keyframes scoreUp {
-            0% { opacity: 1; transform: translateY(0); }
-            100% { opacity: 0; transform: translateY(-60px); }
-        }
-
-        @media (max-width: 768px) {
-            #controlsBar {
-                padding: 6px 8px;
-                gap: 3px;
-                border-radius: 16px;
-                bottom: 10px;
-            }
-            .btn {
-                padding: 7px 10px;
-                font-size: 0.68em;
-                border-radius: 18px;
-            }
-            #contestPanel {
-                min-width: 260px;
-                padding: 15px;
-                gap: 8px;
-            }
-            #leaderboard {
-                right: 4px;
-                min-width: 130px;
-                padding: 8px 12px;
-            }
-        }
+        select option { background: #1a1a2e; color: #fff; }
+        .timer { color: #ffd700; font-weight: bold; font-size: 0.9em; min-width: 50px; text-align: center; }
+        
+        /* Hidden inputs */
+        #musicInput, #imageInput { display: none; }
     </style>
 </head>
 <body>
-
-    <!-- VIEW SELECTOR -->
-    <div id="viewSelector">
-        <button class="view-btn" data-view="mobile">📱 Mobile</button>
-        <button class="view-btn active" data-view="desktop">🖥️ Desktop</button>
-        <button class="view-btn" data-view="fullscreen">⛶ Fullscreen</button>
+    <canvas id="canvas"></canvas>
+    
+    <div class="top-bar">
+        <div class="logo">JHONNY<span>BALL</span> 🏆</div>
+        <div class="status" id="status">LIVE</div>
     </div>
-
-    <!-- APP CONTAINER -->
-    <div id="appContainer" class="desktop-view">
-        <div id="gameWrapper">
-            <canvas id="gameCanvas"></canvas>
-
-            <!-- TOP BAR -->
-            <div id="topBar">
-                <div id="logo">JHONNY<span>BALL</span> 🏆</div>
-                <div>
-                    <span id="statusDot"></span>
-                    <span id="statusText">LIVE</span>
-                </div>
-            </div>
-
-            <!-- LEADERBOARD -->
-            <div id="leaderboard">
-                <h3>🏆 LEADERBOARD</h3>
-                <div id="lbContent"></div>
-            </div>
-
-            <!-- CONTEST PANEL -->
-            <div id="contestPanel">
-                <h3>🎮 CONTEST MODE</h3>
-                <button class="contest-option" data-mode="free">🆓 Free For All</button>
-                <button class="contest-option" data-mode="1v1">⚔️ 1v1 Duel</button>
-                <button class="contest-option" data-mode="team">👥 Team Battle (2v2)</button>
-                <button class="contest-option" data-mode="survival">💀 Last Ball Standing</button>
-                <button class="contest-option" data-mode="king">👑 King of the Hill</button>
-                <button class="contest-option" data-mode="race">🏁 Race Mode</button>
-                <button class="contest-close" id="contestClose">✕ Close</button>
-            </div>
-
-            <!-- DURATION SELECTOR -->
-            <div id="durationPanel" class="hidden">
-                <button class="dur-btn" data-dur="7">7s</button>
-                <button class="dur-btn" data-dur="30">30s</button>
-                <button class="dur-btn active" data-dur="60">1m</button>
-                <button class="dur-btn" data-dur="120">2m</button>
-                <button class="dur-btn" data-dur="300">5m</button>
-                <button class="dur-btn" data-dur="600">10m</button>
-            </div>
-
-            <!-- BOTTOM CONTROLS -->
-            <div id="controlsBar">
-                <button class="btn" id="pauseBtn">⏯️</button>
-                <button class="btn" id="resetBtn">↺</button>
-                <button class="btn contest-btn" id="contestBtn">🏆 Contest</button>
-                <button class="btn lb-btn" id="lbBtn">📊 LB</button>
-                <button class="btn dur" id="durationBtn">⏱ <span id="durLabel">1m</span></button>
-                <button class="btn rec" id="recordBtn">⏺ Rec</button>
-                <span id="timerDisplay">00:00</spa
+    
+    <div class="controls">
+        <button id="pauseBtn">⏯️ Pause</button>
+        <button id="resetBtn">↺ Reset</button>
+        <select id="durationSelect">
+            <option value="7">7 sec</option>
+            <option value="30" selected>30 sec</option>
+            <option value="60">1 min</option>
+            <option value="120">2 min</option>
+            <option value="300">5 min</option>
+            <option value="600">10 min</option>
+        </select>
+        <button class="record-btn" id="recordBtn">⏺ Record</button>
+        <span class="timer" id="timer">00:00</span>
+        <button id="addBtn">➕ Add</button>
+        <button id="clearBtn">🗑 Clear</button>
+        <button id="musicBtn">🎵 Music</button>
+        <button id="imageBtn">🖼️ Images</button>
+        <input type="range" id="speedSlider" min="1" max="20" value="7" style="width:80px;">
+    </div>
+    
+    <input type="file" id="musicInput" accept="audio/*">
+    <input type="file" id="imageInput" accept="image/*" multiple>
+    
+    <script>
+    (function() {
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        // State
+        let balls = [];
+        let paused = false;
+        let recording = false;
+        let mediaRecorder = null;
+        let recordedChunks = [];
+        let recordingTimer = null;
+        let recordingTimeLeft = 30;
+        let recordingDuration = 30;
+        let audioElement = null;
+        let isMusicPlaying = false;
+        let customImages = [];
+        let isDragging = false;
+        let dragBall = null;
+        let dragStartX = 0, dragStartY = 0;
+        
+        // Arena
+        let cx, cy, radius;
+        
+        // Celebrities
+        const celebs = [
+            { name: 'Elon Musk', emoji: '🚀', color: '#ff6b6b' },
+            { name: 'Ronaldo', emoji: '⚽', color: '#4ecdc4' },
+            { name: 'Messi', emoji: '🐐', color: '#a29bfe' },
+            { name: 'MrBeast', emoji: '💰', color: '#fd79a8' },
+            { name: 'Taylor Swift', emoji: '🎤', color: '#ffeaa7' },
+            { name: 'Drake', emoji: '🎵', color: '#74b9ff' },
+            { name: 'Kim K', emoji: '💋', color: '#fab1a0' },
+            { name: 'Trump', emoji: '🦅', color: '#ff7675' },
+            { name: 'Biden', emoji: '🏛️', color: '#81ecec' },
+            { name: 'Zuckerberg', emoji: '🤖', color: '#55efc4' },
+            { name: 'Jeff Bezos', emoji: '📦', color: '#dfe6e9' },
+            { name: 'Putin', emoji: '🐻', color: '#b2bec3' },
+        ];
+        
+        // Ball class
+        class Ball {
+            constructor(x, y, vx, vy, celeb, img) {
+                this.x = x;
+                this.y = y;
+                this.vx = vx || (Math.random() - 0.5) * 5;
+                this.vy = vy || (Math.random() - 0.5) * 5;
+                this.celeb = celeb;
+                this.img = img;
+                this.radius = 35;
+                this.alive = true;
+            }
+            
+            update(speed) {
+                if (!this.alive || paused) return;
+                const f = speed / 7;
+                this.x += this.vx * f;
+                this.y += this.vy * f;
+                
+                // Circle boundary
+                const dx = this.x - cx;
+                const dy = this.y - cy;
+                const dist = Math.sqrt(dx*dx + dy*dy);
+                const maxDist = radius - this.radius;
+                
+                if (dist > maxDist && dist > 0) {
+                    const nx = dx/dist;
+                    const ny = dy/dist;
+                    const dot = this.vx*nx + this.vy*ny;
+                    this.vx -= 2*dot*nx;
+                    this.vy -= 2*dot*ny;
+                    this.x = cx + nx*maxDist;
+                    this.y = cy + ny*maxDist;
+                    
+                    const s = Math.sqrt(this.vx*this.vx + this.vy*this.vy);
+                    if (s > 10) { this.vx = (this.vx/s)*10; this.vy = (this.vy/s)*10; }
+                }
+                
+                // Ball collision
+                for (let b of balls) {
+                    if (b === this || !b.alive) continue;
+                    const ddx = this.x - b.x;
+                    const ddy = this.y - b.y;
+                    const dd = Math.sqrt(ddx*ddx + ddy*ddy);
+                    if (dd < this.radius + b.radius && dd > 0) {
+                        const overlap = this.radius + b.radius - dd;
+                        const nx2 = ddx/dd;
+                        const ny2 = ddy/dd;
+                        this.x += nx2*overlap/2;
+                        this.y += ny2*overlap/2;
+                        b.x -= nx2*overlap/2;
+                        b.y -= ny2*overlap/2;
+                        [this.vx, b.vx] = [b.vx, this.vx];
+                        [this.vy, b.vy] = [b.vy, this.vy];
+                    }
+                }
+            }
+            
+            draw(ctx) {
+                if (!this.alive) return;
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                
+                // Shadow
+                ctx.shadowColor = 'rgba(0,0,0,0.5)';
+                ctx.shadowBlur = 8;
+                
+                // Draw image or colored circle
+                ctx.beginPath();
+                ctx.arc(0, 0, this.radius, 0, Math.PI*2);
+                
+                if (this.img && this.img.complete && this.img.naturalWidth > 0) {
+                    ctx.clip();
+                    ctx.drawImage(this.img, -this.radius, -this.radius, this.radius*2, this.radius*2);
+                } else {
+                    ctx.fillStyle = this.celeb.color;
+                    ctx.fill();
+                    ctx.fillStyle = '#fff';
+                    ctx.font = `${this.radius*1.1}px Arial`;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(this.celeb.emoji, 0, -5);
+                }
+                
+                // Border
+                ctx.shadowColor = 'transparent';
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.arc(0, 0, this.radius, 0, Math.PI*2);
+                ctx.stroke();
+                
+                // Name
+                ctx.fillStyle = '#fff';
+                ctx.font = `bold ${this.radius*0.28}px Arial`;
+                ctx.textAlign = 'center';
+                ctx.fillText(this.celeb.name, 0, this.radius + 12);
+                
+                ctx.restore();
+            }
+            
+            hitTest(px, py) {
+                const dx = px - this.x;
+                const dy = py - this.y;
+                return Math.sqrt(dx*dx + dy*dy) < this.radius + 5;
+            }
+        }
+        
+        // Resize
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            cx = canvas.width/2;
+            cy = canvas.height/2;
+            radius = Math.min(canvas.width, canvas.height) * 0.38;
+            
+            // Keep balls inside
+            for (let b of balls) {
+                const dx = b.x - cx;
+                const dy = b.y - cy;
+                const d = Math.sqrt(dx*dx + dy*dy);
+                if (d > radius - b.radius && d > 0) {
+                    b.x = cx + (dx/d)*(radius - b.radius);
+                    b.y = cy + (dy/d)*(radius - b.radius);
+                }
+            }
+        }
+        
+        // Spawn ball
+        function spawnBall(x, y, vx, vy) {
+            if (balls.length >= 40) return;
+            const sx = x || cx + (Math.random()-0.5)*radius*0.5;
+            const sy = y || cy + (Math.random()-0.5)*radius*0.5;
+            const celeb = celebs[Math.floor(Math.random()*celebs.length)];
+            const img = customImages.length > 0 ? customImages[Math.floor(Math.random()*customImages.length)] : null;
+            balls.push(new Ball(sx, sy, vx, vy, celeb, img));
+        }
+        
+        // Draw arena
+        function drawArena() {
+            // Fill
+            const grad = ctx.createRadialGradient(cx, cy, radius*0.7, cx, cy, radius);
+            grad.addColorStop(0, 'rgba(20,22,40,0.5)');
+            grad.addColorStop(1, 'rgba(255,51,102,0.05)');
+            ctx.fillStyle = grad;
+            ctx.beginPath();
+            ctx.arc(cx, cy, radius, 0, Math.PI*2);
+            ctx.fill();
+            
+            // Border
+            ctx.strokeStyle = 'rgba(255,51,102,0.6)';
+            ctx.lineWidth = 3;
+            ctx.shadowColor = '#ff3366';
+            ctx.shadowBlur = 20;
+            ctx.beginPath();
+            ctx.arc(cx, cy, radius, 0, Math.PI*2);
+            ctx.stroke();
+            ctx.shadowBlur = 0;
+        }
+        
+        // Recording
+        function startRecording() {
+            if (!canvas.captureStream) {
+                alert('Recording not supported in this browser');
+                return;
+            }
+            
+            recordedChunks = [];
+            const stream = canvas.captureStream(60);
+            
+            // Add audio if playing
+            let finalStream = stream;
+            if (audioElement && isMusicPlaying) {
+                try {
+                    const audioCtx = new AudioContext();
+                    const source = audioCtx.createMediaElementSource(audioElement);
+                    const dest = audioCtx.createMediaStreamDestination();
+                    source.connect(dest);
+                    source.connect(audioCtx.destination);
+                    const audioTrack = dest.stream.getAudioTracks()[0];
+                    if (audioTrack) {
+                        finalStream = new MediaStream([...stream.getVideoTracks(), audioTrack]);
+                    }
+                } catch(e) {}
+            }
+            
+            try {
+                mediaRecorder = new MediaRecorder(finalStream, {
+                    mimeType: 'video/webm;codecs=vp9',
+                    videoBitsPerSecond: 8000000
+                });
+            } catch(e) {
+                mediaRecorder = new MediaRecorder(finalStream, {
+                    mimeType: 'video/webm',
+                    videoBitsPerSecond: 8000000
+                });
+            }
+            
+            mediaRecorder.ondataavailable = e => {
+                if (e.data.size > 0) recordedChunks.push(e.data);
+            };
+            
+            mediaRecorder.onstop = () => {
+                const blob = new Blob(recordedChunks, { type: 'video/mp4' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `jhonyball-${Date.now()}.mp4`;
+                a.click();
+                URL.revokeObjectURL(url);
+                cleanupRecording();
+            };
+            
+            mediaRecorder.start(1000);
+            recording = true;
+            recordingTimeLeft = recordingDuration;
+            
+            document.getElementById('recordBtn').textContent = '⏹ Stop';
+            document.getElementById('recordBtn').classList.add('recording');
+            document.getElementById('status').textContent = '🔴 REC';
+            document.getElementById('status').classList.add('recording');
+            
+            updateTimer();
+            recordingTimer = setInterval(() => {
+                recordingTimeLeft--;
+                updateTimer();
+                if (recordingTimeLeft <= 0) stopRecording();
+            }, 1000);
+        }
+        
+        function stopRecording() {
+            if (mediaRecorder && mediaRecorder.state === 'recording') {
+                mediaRecorder.stop();
+            } else {
+                cleanupRecording();
+            }
+        }
+        
+        function cleanupRecording() {
+            recording = false;
+            if (recordingTimer) clearInterval(recordingTimer);
+            document.getElementById('recordBtn').textContent = '⏺ Record';
+            document.getElementById('recordBtn').classList.remove('recording');
+            document.getElementById('status').textContent = 'LIVE';
+            document.getElementById('status').classList.remove('recording');
+            document.getElementById('timer').textContent = '00:00';
+        }
+        
+        function updateTimer() {
+            const m = Math.floor(recordingTimeLeft/60);
+            const s = recordingTimeLeft % 60;
+            document.getElementById('timer').textContent = 
+                String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+        }
+        
+        // Animation
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#0a0a14';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            drawArena();
+            
+            const speed = parseInt(document.getElementById('speedSlider').value);
+            for (let b of balls) b.update(speed);
+            for (let b of balls) b.draw(ctx);
+            
+            requestAnimationFrame(animate);
+        }
+        
+        // Event listeners
+        window.addEventListener('resize', resize);
+        
+        canvas.addEventListener('mousedown', e => {
+            const rect = canvas.getBoundingClientRect();
+            const mx = e.clientX - rect.left;
+            const my = e.clientY - rect.top;
+            
+            // Check if clicking a ball
+            for (let i = balls.length-1; i >= 0; i--) {
+                if (balls[i].hitTest(mx, my)) {
+                    dragBall = balls[i];
+                    isDragging = true;
+                    dragStartX = mx;
+                    dragStartY = my;
+                    dragBall.vx = 0;
+                    dragBall.vy = 0;
+                    return;
+                }
+            }
+            
+            // Add new ball
+            if (Math.sqrt((mx-cx)**2 + (my-cy)**2) < radius - 35) {
+                spawnBall(mx, my);
+            }
+        });
+        
+        canvas.addEventListener('mousemove', e => {
+            if (!isDragging || !dragBall) return;
+            const rect = canvas.getBoundingClientRect();
+            const mx = e.clientX - rect.left;
+            const my = e.clientY - rect.top;
+            const dx = mx - cx;
+            const dy = my - cy;
+            const d = Math.sqrt(dx*dx + dy*dy);
+            if (d < radius - dragBall.radius) {
+                dragBall.x = mx;
+                dragBall.y = my;
+            } else {
+                dragBall.x = cx + (dx/d)*(radius - dragBall.radius);
+                dragBall.y = cy + (dy/d)*(radius - dragBall.radius);
+            }
+        });
+        
+        canvas.addEventListener('mouseup', e => {
+            if (isDragging && dragBall) {
+                const rect = canvas.getBoundingClientRect();
+                const mx = e.clientX - rect.left;
+                const my = e.clientY - rect.top;
+                dragBall.vx = (mx - dragStartX) * 0.3;
+                dragBall.vy = (my - dragStartY) * 0.3;
+            }
+            isDragging = false;
+            dragBall = null;
+        });
+        
+        // Touch support
+        canvas.addEventListener('touchstart', e => {
+            e.preventDefault();
+            const t = e.touches[0];
+            canvas.dispatchEvent(new MouseEvent('mousedown', { clientX: t.clientX, clientY: t.clientY }));
+        });
+        canvas.addEventListener('touchmove', e => {
+            e.preventDefault();
+            const t = e.touches[0];
+            canvas.dispatchEvent(new MouseEvent('mousemove', { clientX: t.clientX, clientY: t.clientY }));
+        });
+        canvas.addEventListener('touchend', () => canvas.dispatchEvent(new MouseEvent('mouseup')));
+        
+        // Buttons
+        document.getElementById('pauseBtn').addEventListener('click', function() {
+            paused = !paused;
+            this.textContent = paused ? '▶️ Play' : '⏯️ Pause';
+        });
+        
+        document.getElementById('resetBtn').addEventListener('click', () => {
+            balls = [];
+            for (let i = 0; i < 5; i++) spawnBall();
+        });
+        
+        document.getElementById('durationSelect').addEventListener('change', function() {
+            recordingDuration = parseInt(this.value);
+        });
+        
+        document.getElementById('recordBtn').addEventListener('click', () => {
+            recording ? stopRecording() : startRecording();
+        });
+        
+        document.getElementById('addBtn').addEventListener('click', () => spawnBall());
+        document.getElementById('clearBtn').addEventListener('click', () => { balls = []; });
+        
+        document.getElementById('musicBtn').addEventListener('click', () => {
+            document.getElementById('musicInput').click();
+    
