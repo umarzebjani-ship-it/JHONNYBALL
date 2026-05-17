@@ -474,81 +474,87 @@
                     }
                 }
 
-                draw(ctx) {
-                    if (!this.alive) return;
-                    ctx.save();
-                    ctx.translate(this.x, this.y);
-                    ctx.rotate(this.rotation);
-                    const size = this.radius;
+                            draw(ctx) {
+                if (!this.alive) return;
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.rotation);
+                const size = this.radius;
 
-                    ctx.shadowColor = 'rgba(0,0,0,0.6)';
-                    ctx.shadowBlur = 12;
-                    ctx.shadowOffsetY = 4;
+                ctx.shadowColor = 'rgba(0,0,0,0.6)';
+                ctx.shadowBlur = 12;
+                ctx.shadowOffsetY = 4;
 
-                    if (this.image && this.image.complete && this.image.naturalWidth > 0) {
-                        ctx.beginPath();
-                        ctx.arc(0, 0, size, 0, Math.PI * 2);
-                        ctx.clip();
-                        ctx.drawImage(this.image, -size, -size, size * 2, size * 2);
-                    } else {
-                        const grad = ctx.createRadialGradient(-size * 0.2, -size * 0.3, size * 0.1, 0, 0, size);
-                        grad.addColorStop(0, this.celeb.color1 || '#ff6b6b');
-                        grad.addColorStop(1, this.celeb.color2 || '#ee5a24');
-                        ctx.fillStyle = grad;
-                        ctx.beginPath();
-                        ctx.arc(0, 0, size, 0, Math.PI * 2);
-                        ctx.fill();
-
-                        ctx.shadowColor = 'transparent';
-                        ctx.fillStyle = '#fff';
-                        ctx.font = `${size * 1.1}px sans-serif`;
-                        ctx.textAlign = 'center';
-                        ctx.textBaseline = 'middle';
-                        ctx.fillText(this.celeb.emoji, 0, 0);
-                    }
-
-                    // Neon visual borders
-                    ctx.shadowColor = 'transparent';
-                    ctx.strokeStyle = this === dragBall ? 'var(--accent2)' : 'rgba(255,255,255,0.75)';
-                    ctx.lineWidth = this === dragBall ? 4 : 2.5;
+                if (this.image && this.image.complete && this.image.naturalWidth > 0) {
                     ctx.beginPath();
                     ctx.arc(0, 0, size, 0, Math.PI * 2);
-                    ctx.stroke();
+                    ctx.clip();
+                    ctx.drawImage(this.image, -size, -size, size * 2, size * 2);
+                } else {
+                    const grad = ctx.createRadialGradient(-size * 0.2, -size * 0.3, size * 0.1, 0, 0, size);
+                    grad.addColorStop(0, this.celeb.color1 || '#ff6b6b');
+                    grad.addColorStop(1, this.celeb.color2 || '#ee5a24');
+                    ctx.fillStyle = grad;
+                    ctx.beginPath();
+                    ctx.arc(0, 0, size, 0, Math.PI * 2);
+                    ctx.fill();
 
-                    // Absolute text naming layout underneath
+                    ctx.shadowColor = 'transparent';
                     ctx.fillStyle = '#fff';
-                    ctx.font = `bold ${size * 0.32}px system-ui, sans-serif`;
+                    ctx.font = `${size * 1.1}px sans-serif`;
                     ctx.textAlign = 'center';
-                    ctx.textBaseline = 'top';
-                    ctx.fillText(this.celeb.name, 0, size + 5);
-
-                    ctx.restore();
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(this.celeb.emoji, 0, 0);
                 }
 
-                containsPoint(px, py) {
-                    const dx = px - this.x;
-                    const dy = py - this.y;
-                    return Math.sqrt(dx * dx + dy * dy) < this.radius + 6;
-                }
+                // Neon visual borders
+                ctx.shadowColor = 'transparent';
+                ctx.strokeStyle = this === dragBall ? 'var(--accent2)' : 'rgba(255,255,255,0.75)';
+                ctx.lineWidth = this === dragBall ? 4 : 2.5;
+                ctx.beginPath();
+                ctx.arc(0, 0, size, 0, Math.PI * 2);
+                ctx.stroke();
+
+                // Absolute text naming layout underneath
+                ctx.fillStyle = '#fff';
+                ctx.font = `bold ${size * 0.32}px system-ui, sans-serif`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'top';
+                ctx.fillText(this.celeb.name, 0, size + 5);
+
+                ctx.restore();
             }
 
-            // ==================== INITIALIZATION & MANAGEMENT ====================
-            function resizeCanvas() {
-                canvas.width = window.innerWidth;
-                canvas.height = window.innerHeight;
-                updateArenaSize();
+            containsPoint(px, py) {
+                const dx = px - this.x;
+                const dy = py - this.y;
+                return Math.sqrt(dx * dx + dy * dy) < this.radius + 6;
             }
+        }
 
-            function updateArenaSize() {
-                arenaCenterX = canvas.width / 2;
-                arenaCenterY = canvas.height / 2;
-                arenaRadius = Math.min(canvas.width, canvas.height) * 0.43;
-                if (arenaRadius < 140) arenaRadius = 140; 
-            }
+        // ==================== INITIALIZATION & MANAGEMENT ====================
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            updateArenaSize();
+        }
 
-            function generateInitialCelebrities() {
-                balls = [];
-                const subset = defaultCelebs.slice(0, 6);
-                subset.forEach((celeb, idx) => {
-                    const angle = (idx / subset.length) * Math.PI * 2;
-                    
+        function updateArenaSize() {
+            arenaCenterX = canvas.width / 2;
+            arenaCenterY = canvas.height / 2;
+            arenaRadius = Math.min(canvas.width, canvas.height) * 0.43;
+            if (arenaRadius < 140) arenaRadius = 140; 
+        }
+
+        function generateInitialCelebrities() {
+            balls = [];
+            const subset = defaultCelebs.slice(0, 6);
+            subset.forEach((celeb, idx) => {
+                const angle = (idx / subset.length) * Math.PI * 2;
+                const spawnR = arenaRadius * 0.4;
+                const x = arenaCenterX + Math.cos(angle) * spawnR;
+                const y = arenaCenterY + Math.sin(angle) * spawnR;
+                balls.push(new CelebBall(x, y, null, null, celeb));
+            });
+        }
+
