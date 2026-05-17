@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BallArena – Celebrity Simulator Pro</title>
+    <style>
+        :root {
+            --bg: #0a0a0f;
+            --arena: #111827;
+            --accent: #e94560;
+            --accent2: #0ea5e9;
+            --gold: #f59e0b;
+            --panel-bg: rgba(15, 15, 25, 0.95);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: var(--bg);
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            flex-direction: column;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        #canvas {
+            display: block;
+            flex: 1;
+            cursor: pointer;
+        }
+
+        /* Top Bar */
+        .top-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 20;
+            background: linear-gradient(180deg, rgba(0,0,0,0.9) 0%, transparent 100%);
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .logo {
+            font-size: 1.4em;
+            font-weight: 900;
+            color: #fff;
+            letter-spacing: 1px;
+        }
+        .logo .gradient-text {
+            background: linear-gradient(135deg, #e94560, #f59e0b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .status-badge {
+            background: rgba(233,68,96,0.2);
+            color: #e94560;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.7em;
+            font-weight: 600;
+            letter-spacing: 1px;
+            border: 1px solid rgba(233,68,96,0.3);
+        }
+        .status-badge.recording {
+            background: rgba(255,0,0,0.3);
+            color: #ff4444;
+            border-color: rgba(255,0,0,0.5);
+            animation: badge-pulse 0.8s infinite;
+        }
+        @keyframes badge-pulse {
+            0%,100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Bottom Controls */
+        .controls-bar {
+            position: absolute;
+            bottom: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 20;
+            background: var(--panel-bg);
+            border-radius: 20px;
+            padding: 10px 16px;
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            flex-wrap: wrap;
+            justify-content: center;
+            border: 1px solid rgba(255,255,255,0.12);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+
+        .btn {
+            padding: 9px 16px;
+            border: 1px solid rgba(255,255,255,0.2);
+            background: rgba(255,255,255,0.05);
+            color: #ddd;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.78em;
+            letter-spacing: 0.5px;
+            transition: all 0.2s;
+            white-space: nowrap;
+            font-family: inherit;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .btn:hover {
+            background: rgba(255,255,255,0.12);
+            border-color: rgba(255,255,255,0.4);
+            color: #fff;
+        }
+        .btn:active {
+            transform: scale(0.96);
+        }
+        .btn.accent {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #fff;
+        }
+        .btn.accent:hover {
+            background: #ff5a75;
+            box-shadow: 0 0 20px rgba(233,68,96,0.4);
+        }
+        .btn.gold {
+            background: var(--gold);
+            border-color: var(--gold);
+            color: #000;
+            font-weight: 700;
+        }
+        .btn.gold:hover {
+            box-shadow: 0 0 20px rgba(245,158,11,0.5);
+        }
+        .btn.blue {
+            background: var(--accent2);
+            border-color: var(--accent2);
+            color: #fff;
+        }
+        .btn.blue:hover {
+            box-shadow: 0 0 20px rgba(14,165,233,0.4);
+        }
+        .btn.recording-active {
+            background: #ff0000 !important;
+            border-color: #ff0000 !important;
+            color: #fff !important;
+            animation: rec-pulse 0.7s infinite;
+        }
+        @keyframes rec-pulse {
+            0%,100% { box-shadow: 0 0 10px rgba(255,0,0,0.5); }
+            50% { box-shadow: 0 0 30px rgba(255,0,0,0.9); }
+        }
+
+        .divider {
+            width: 1px;
+            height: 24px;
+            background: rgba(255,255,255,0.15);
+            margin: 0 4px;
+        }
+
+        .timer-display {
+            color: #f59e0b;
+            font-weight: 700;
+            font-size: 0.85em;
+            min-width: 55px;
+            text-align: center;
+            font-variant-numeric: tabular-nums;
+            font-family: 'SF Mono', 'Consolas', monospace;
+        }
+        .timer-display.warning {
+            color: #ff4444;
+            animation: blink 0.5s infinite;
+        }
+        @keyframes blink {
+            50% { opacity: 0.3; }
+        }
+
+        .speed-group {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            color: #aaa;
+            font-size: 0.7em;
+        }
+        input[type="range"] {
+            width: 65px;
+            accent-color: #e94560;
+            height: 4px;
+        }
+
+        /* Recording Duration Selector */
+        .duration-selector {
+            position: absolute;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 21;
+            background: var(--panel-bg);
+            border-radius: 15px;
+            padding: 8px 12px;
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+            justify-content: center;
+            border: 1px solid rgba(255,255,255,0.15);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            transition: all 0.3s;
+        }
+        .duration-selector.hidden {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateX(-50%) translateY(10px);
+        }
+        .duration-btn {
+            padding: 6px 13px;
+            border: 1px solid rgba(255,255,255,0.2);
+            background: rgba(255,255,255,0.05);
+            color: #ccc;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.7em;
+            font-weight: 600;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+        .duration-btn:hover {
+            background: rgba(255,255,255,0.15);
+            color: #fff;
+        }
+        .duration-btn.active {
+            background: var(--accent2);
+            border-color: var(--accent2);
+            color: #fff;
+            box-shadow: 0 0 12px rgba(14,165,233,0.3);
+        }
+
+        /* Music Upload Overlay */
+        .music-indicator {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: #aaa;
+            font-size: 0.7em;
+        }
+        .music-indicator.active {
+            color: #4ade80;
+        }
+        .music-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #666;
+        }
+        .music-dot.active {
+            background: #4ade80;
+            box-shadow: 0 0 8px #4ade80;
+            animation: music-pulse 1s infinite;
+        }
+        @keyframes music-pulse {
+            0%,100% { box-shadow: 0 0 5px #4ade80; }
+            50% { box-shadow: 0 0 15px #4ade80; }
+        }
+
+        /* Mobile responsive */
+        @media (max-width: 768px) {
+            .controls-bar {
+                padding: 8px 10px;
+                gap: 4px;
+                border-radius: 15px;
+            }
+            .btn {
+                padding: 7px 12px;
+                font-size: 0.7em;
+            }
+            .duration-selector {
+                bottom: 70px;
+                padding: 6px 8px;
+                gap: 3px;
+            }
+            .duration-btn {
+                padding: 5px 10px;
+                font-size: 0.65em;
+            }
+            .divider {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="top-bar">
+        <div class="logo">Ball<span class="gradient-text">Arena</span> 🌟</div>
+        <div class="status-badge" id="statusBadge">🎮 LIVE</div>
+    </div>
+
+    <div class="duration-selector hidden" id="durationSelector">
+        <button class="duration-btn" data-duration="7">⚡ 7 sec</button>
+        <button class="duration-btn active" data-duration="30">🎬 30 sec</button>
+        <button class="duration-btn" data-duration="60">📹 1 min</button>
+        <button class="duration-btn" data-duration="120">🎥 2 min</button>
+        <button class="duration-btn" data-duration="300">🎞️ 5 min</button>
+        <button class="duration-btn" data-duration="600">🎬 10 min</button>
+    </div>
+
+    <div class="controls-bar" id="controlsBar">
+        <button class="btn" id="pauseBtn" title="Pause/Play (Space)">⏯️</button>
+        <button class="btn" id="resetBtn" title="Reset (R)">↺</button>
+        <span class="divider"></span>
+        <button class="btn blue" id="durationBtn" title="Set Recording Duration">⏱ <span id="durationLabel">30s</span></button>
+        <button class="btn accent" id="recordBtn" title="Start Recording">⏺ Rec</button>
+        <span class="timer-display" id="timerDisplay">00:30</span>
+        <span class="divider"></span>
+        <button class="btn" id="addBtn" title="Add Celebrity (+)">➕</button>
+        <button class="btn" id="clearBtn" title="Clear All (C)">🗑</button>
+        <span class="divider"></span>
+        <button class="btn" id="musicBtn" title="Add Music from Gallery">🎵 <span id="musicLabel">Music</span></button>
+        <div class="music-indicator" id="musicIndicator">
+            <span class="music-dot" id="musicDot"></span>
+        </div>
+        <div class="speed-group">
+            <span>🐢</span>
+            <input type="range" id="speedSlider" min="1" max="20" value="7" title="Speed">
+            <span>🐇</span>
+        </div>
+    </div>
+
+    <input type="file" id="musicInput" accept="audio/*" style="display:none;">
+    <input type="file" id="imageInput" accept="image/*" multiple style="display:none;">
+
+    <canvas id="canvas"></canvas>
+
+    <script>
+        (function() {
+            const canvas = document.getElementById('canvas');
+            const ctx = canvas.getContext('2d');
+
+            // ==================== STATE ====================
+            let balls = [];
+            let paused = false;
+            let recording = false;
+            let mediaRecorder = null;
+            let recordedChunks = [];
+            let canvasStream = null;
+            let recordingDuration = 30; 
+            let recordingTimer = null;
+            let recordingTimeLeft = 30;
+            let isDragging = false;
+            let dragBall = null;
+            let dragStartX = 0;
+            let dragStartY = 0;
+
+            // Music Elements
+            let audio = null;
+
+            // Arena
+            let arenaCenterX, arenaCenterY, arenaRadius;
+
+            // Custom celebrity images
+            let customCelebImages = [];
+
+            // ==================== CELEBRITY DATA ====================
+            const defaultCelebs = [
+                { name: 'Elon', emoji: '🚀', color1: '#ff6b6b', color2: '#ee5a24' },
+                { name: 'Ronaldo', emoji: '⚽', color1: '#4ecdc4', color2: '#44bd32' },
+                { name: 'Messi', emoji: '🐐', color1: '#a29bfe', color2: '#6c5ce7' },
+                { name: 'MrBeast', emoji: '💰', color1: '#fd79a8', color2: '#e84393' },
+                { name: 'Taylor', emoji: '🎤', color1: '#ffeaa7', color2: '#fdcb6e' },
+                { name: 'Drake', emoji: '🎵', color1: '#74b9ff', color2: '#0984e3' },
+                { name: 'Kim K', emoji: '💋', color1: '#fab1a0', color2: '#e17055' },
+                { name: 'Trump', emoji: '🦅', color1: '#ff7675', color2: '#d63031' },
+                { name: 'Biden', emoji: '🏛️', color1: '#81ecec', color2: '#00cec9' },
+                { name: 'Putin', emoji: '🐻', color1: '#dfe6e9', color2: '#b2bec3' },
+                { name: 'Zuckerberg', emoji: '🤖', color1: '#55efc4', color2: '#00b894' },
+                { name: 'Bezos', emoji: '📦', color1: '#fab1a0', color2: '#e17055' },
+            ];
+
+            // ==================== BALL CLASS ====================
+            class CelebBall {
+                constructor(x, y, vx, vy, celebData, imageObj = null, radius = 38) {
+                    this.x = x;
+                    this.y = y;
+                    this.vx = vx || (Math.random() - 0.5) * 8;
+                    this.vy = vy || (Math.random() - 0.5) * 8;
+                    this.celeb = celebData;
+                    this.image = imageObj; 
+                    this.radius = radius;
+                    this.rotation = 0;
+                    this.rotSpeed = (Math.random() - 0.5) * 0.05;
+                    this.alive = true;
+                    this.bounceCount = 0;
+                }
+
+                update(speedFactor) {
+                    if (!this.alive || paused || this === dragBall) return;
+                    const speed = speedFactor / 7;
+                    this.x += this.vx * speed;
+                    this.y += this.vy * speed;
+                    this.rotation += this.rotSpeed * speed;
+
+                    // Circular boundary physics
+                    const dx = this.x - arenaCenterX;
+                    const dy = this.y - arenaCenterY;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    const maxDist = arenaRadius - this.radius;
+
+                    if (dist > maxDist) {
+                        const nx = dx / dist;
+                        const ny = dy / dist;
+                        const dot = this.vx * nx + this.vy * ny;
+                        
+                        // Reflect vector
+                        this.vx -= 2 * dot * nx;
+                        this.vy -= 2 * dot * ny;
+                        
+                        // Snap back inside boundary
+                        this.x = arenaCenterX + nx * maxDist;
+                        this.y = arenaCenterY + ny * maxDist;
+                        
+                        // Minor chaos factor to simulate dynamic momentum shifts
+                        this.vx += (Math.random() - 0.5) * 0.4;
+                        this.vy += (Math.random() - 0.5) * 0.4;
+                        
+                        this.bounceCount++;
+                    }
+
+                    // Ball-to-ball standard physics collision
+                    for (const other of balls) {
+                        if (other === this || !other.alive || other === dragBall) continue;
+                        const dx2 = this.x - other.x;
+                        const dy2 = this.y - other.y;
+                        const dist2 = Math.sqrt(dx2 * dx2 + dy2 * dy2);
+                        const minDist = this.radius + other.radius;
+                        
+                        if (dist2 < minDist && dist2 > 0) {
+                            const overlap = minDist - dist2;
+                            const nx2 = dx2 / dist2;
+                            const ny2 = dy2 / dist2;
+                            
+                            // Distribute position overlap mapping
+                            this.x += nx2 * overlap / 2;
+                            this.y += ny2 * overlap / 2;
+                            other.x -= nx2 * overlap / 2;
+                            other.y -= ny2 * overlap / 2;
+                            
+                            // Vector swap momentum transfer
+                            const tvx = this.vx;
+                            const tvy = this.vy;
+                            this.vx = other.vx;
+                            this.vy = other.vy;
+                            other.vx = tvx;
+                            other.vy = tvy;
+                        }
+                    }
+                }
+
+                draw(ctx) {
+                    if (!this.alive) return;
+                    ctx.save();
+                    ctx.translate(this.x, this.y);
+                    ctx.rotate(this.rotation);
+                    const size = this.radius;
+
+                    ctx.shadowColor = 'rgba(0,0,0,0.6)';
+                    ctx.shadowBlur = 12;
+                    ctx.shadowOffsetY = 4;
+
+                    if (this.image && this.image.complete && this.image.naturalWidth > 0) {
+                        ctx.beginPath();
+                        ctx.arc(0, 0, size, 0, Math.PI * 2);
+                        ctx.clip();
+                        ctx.drawImage(this.image, -size, -size, size * 2, size * 2);
+                    } else {
+                        const grad = ctx.createRadialGradient(-size * 0.2, -size * 0.3, size * 0.1, 0, 0, size);
+                        grad.addColorStop(0, this.celeb.color1 || '#ff6b6b');
+                        grad.addColorStop(1, this.celeb.color2 || '#ee5a24');
+                        ctx.fillStyle = grad;
+                        ctx.beginPath();
+                        ctx.arc(0, 0, size, 0, Math.PI * 2);
+                        ctx.fill();
+
+                        ctx.shadowColor = 'transparent';
+                        ctx.fillStyle = '#fff';
+                        ctx.font = `${size * 1.1}px sans-serif`;
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        ctx.fillText(this.celeb.emoji, 0, 0);
+                    }
+
+                    // Neon visual borders
+                    ctx.shadowColor = 'transparent';
+                    ctx.strokeStyle = this === dragBall ? 'var(--accent2)' : 'rgba(255,255,255,0.75)';
+                    ctx.lineWidth = this === dragBall ? 4 : 2.5;
+                    ctx.beginPath();
+                    ctx.arc(0, 0, size, 0, Math.PI * 2);
+                    ctx.stroke();
+
+                    // Absolute text naming layout underneath
+                    ctx.fillStyle = '#fff';
+                    ctx.font = `bold ${size * 0.32}px system-ui, sans-serif`;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'top';
+                    ctx.fillText(this.celeb.name, 0, size + 5);
+
+                    ctx.restore();
+                }
+
+                containsPoint(px, py) {
+                    const dx = px - this.x;
+                    const dy = py - this.y;
+                    return Math.sqrt(dx * dx + dy * dy) < this.radius + 6;
+                }
+            }
+
+            // ==================== INITIALIZATION & MANAGEMENT ====================
+            function resizeCanvas() {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+                updateArenaSize();
+            }
+
+            function updateArenaSize() {
+                arenaCenterX = canvas.width / 2;
+                arenaCenterY = canvas.height / 2;
+                arenaRadius = Math.min(canvas.width, canvas.height) * 0.43;
+                if (arenaRadius < 140) arenaRadius = 140; 
+            }
+
+            function generateInitialCelebrities() {
+                balls = [];
+                const subset = defaultCelebs.slice(0, 6);
+                subset.forEach((celeb, idx) => {
+                    const angle = (idx / subset.length) * Math.P
