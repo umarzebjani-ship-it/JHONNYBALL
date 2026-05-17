@@ -3,102 +3,65 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JHONNYBALL - Celebrity Simulator</title>
+    <title>JHONNYBALL</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            background: #000;
-            font-family: Arial, sans-serif;
-            overflow: hidden;
-            height: 100vh;
+        body { 
+            background: #0a0a14; 
+            overflow: hidden; 
+            height: 100vh; 
             width: 100vw;
-            user-select: none;
-            -webkit-user-select: none;
+            font-family: Arial, sans-serif;
         }
         canvas { 
             display: block; 
             position: absolute;
             top: 0; left: 0;
-            width: 100%; height: 100%;
-            cursor: pointer;
+            width: 100%; 
+            height: 100%;
         }
-        
-        /* Top bar */
-        .top-bar {
+        .ui {
             position: fixed;
-            top: 10px;
-            left: 10px;
-            right: 10px;
-            z-index: 10;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 15px;
-            background: rgba(0,0,0,0.8);
-            border-radius: 15px;
-            border: 1px solid rgba(255,255,255,0.2);
-        }
-        .logo { color: #fff; font-weight: bold; font-size: 1.2em; }
-        .logo span { color: #ff3366; }
-        .status { color: #4ade80; font-size: 0.8em; }
-        .status.recording { color: #ff0000; animation: pulse 0.5s infinite; }
-        @keyframes pulse { 50% { opacity: 0.5; } }
-        
-        /* Bottom controls */
-        .controls {
-            position: fixed;
-            bottom: 15px;
+            bottom: 20px;
             left: 50%;
             transform: translateX(-50%);
             z-index: 10;
             display: flex;
-            gap: 8px;
-            padding: 10px 15px;
-            background: rgba(0,0,0,0.8);
-            border-radius: 20px;
+            gap: 10px;
+            padding: 12px 20px;
+            background: rgba(0,0,0,0.85);
+            border-radius: 25px;
             border: 1px solid rgba(255,255,255,0.2);
             flex-wrap: wrap;
             justify-content: center;
         }
         button {
-            padding: 8px 16px;
+            padding: 10px 18px;
             border: 1px solid rgba(255,255,255,0.3);
             background: rgba(255,255,255,0.1);
-            color: #fff;
+            color: white;
             border-radius: 20px;
             cursor: pointer;
-            font-size: 0.8em;
+            font-size: 14px;
             font-weight: bold;
-            transition: 0.2s;
         }
         button:hover { background: rgba(255,255,255,0.2); }
-        button.record-btn { background: #ff3366; border-color: #ff3366; }
-        button.record-btn.recording { background: #ff0000; }
-        select {
-            padding: 8px 12px;
-            border-radius: 20px;
-            background: rgba(255,255,255,0.1);
-            color: #fff;
-            border: 1px solid rgba(255,255,255,0.3);
-            font-size: 0.8em;
-            cursor: pointer;
-        }
-        select option { background: #1a1a2e; color: #fff; }
-        .timer { color: #ffd700; font-weight: bold; font-size: 0.9em; min-width: 50px; text-align: center; }
-        
-        /* Hidden inputs */
-        #musicInput, #imageInput { display: none; }
+        button.rec { background: #e94560; border-color: #e94560; }
+        button.rec.recording { background: red; animation: pulse 0.8s infinite; }
+        @keyframes pulse { 50% { opacity: 0.6; } }
+        #timer { color: #ffd700; font-weight: bold; font-size: 16px; min-width: 50px; text-align: center; display: flex; align-items: center; }
+        #status { position: fixed; top: 20px; right: 20px; color: #4ade80; font-weight: bold; z-index: 10; background: rgba(0,0,0,0.8); padding: 8px 16px; border-radius: 15px; }
+        #status.recording { color: red; }
+        select { padding: 8px; border-radius: 15px; background: #1a1a2e; color: white; border: 1px solid rgba(255,255,255,0.3); }
+        input[type="range"] { width: 80px; accent-color: #e94560; }
+        .hidden { display: none; }
     </style>
 </head>
 <body>
     <canvas id="canvas"></canvas>
+    <div id="status">🟢 LIVE</div>
     
-    <div class="top-bar">
-        <div class="logo">JHONNY<span>BALL</span> 🏆</div>
-        <div class="status" id="status">LIVE</div>
-    </div>
-    
-    <div class="controls">
+    <div class="ui">
         <button id="pauseBtn">⏯️ Pause</button>
         <button id="resetBtn">↺ Reset</button>
         <select id="durationSelect">
@@ -109,24 +72,28 @@
             <option value="300">5 min</option>
             <option value="600">10 min</option>
         </select>
-        <button class="record-btn" id="recordBtn">⏺ Record</button>
-        <span class="timer" id="timer">00:00</span>
+        <button class="rec" id="recordBtn">⏺ Record</button>
+        <span id="timer">00:00</span>
         <button id="addBtn">➕ Add</button>
         <button id="clearBtn">🗑 Clear</button>
         <button id="musicBtn">🎵 Music</button>
-        <button id="imageBtn">🖼️ Images</button>
-        <input type="range" id="speedSlider" min="1" max="20" value="7" style="width:80px;">
+        <input type="range" id="speedSlider" min="1" max="20" value="7" title="Speed">
+        <span style="color:#aaa;font-size:12px;">Speed</span>
     </div>
     
-    <input type="file" id="musicInput" accept="audio/*">
-    <input type="file" id="imageInput" accept="image/*" multiple>
-    
+    <input type="file" id="musicInput" accept="audio/*" class="hidden">
+    <input type="file" id="imageInput" accept="image/*" multiple class="hidden">
+
     <script>
-    (function() {
+    // Wrap everything in try-catch to prevent silent errors
+    try {
+        console.log('🚀 Starting JHONNYBALL...');
+        
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
+        console.log('✅ Canvas initialized:', canvas.width, canvas.height);
         
-        // State
+        // Simple ball array
         let balls = [];
         let paused = false;
         let recording = false;
@@ -135,84 +102,69 @@
         let recordingTimer = null;
         let recordingTimeLeft = 30;
         let recordingDuration = 30;
-        let audioElement = null;
-        let isMusicPlaying = false;
-        let customImages = [];
         let isDragging = false;
         let dragBall = null;
         let dragStartX = 0, dragStartY = 0;
+        let audioElement = null;
         
-        // Arena
+        // Arena dimensions
         let cx, cy, radius;
         
-        // Celebrities
+        // Celebrity data
         const celebs = [
-            { name: 'Elon Musk', emoji: '🚀', color: '#ff6b6b' },
-            { name: 'Ronaldo', emoji: '⚽', color: '#4ecdc4' },
-            { name: 'Messi', emoji: '🐐', color: '#a29bfe' },
-            { name: 'MrBeast', emoji: '💰', color: '#fd79a8' },
-            { name: 'Taylor Swift', emoji: '🎤', color: '#ffeaa7' },
-            { name: 'Drake', emoji: '🎵', color: '#74b9ff' },
-            { name: 'Kim K', emoji: '💋', color: '#fab1a0' },
-            { name: 'Trump', emoji: '🦅', color: '#ff7675' },
-            { name: 'Biden', emoji: '🏛️', color: '#81ecec' },
-            { name: 'Zuckerberg', emoji: '🤖', color: '#55efc4' },
-            { name: 'Jeff Bezos', emoji: '📦', color: '#dfe6e9' },
-            { name: 'Putin', emoji: '🐻', color: '#b2bec3' },
+            { name: 'Elon', emoji: '🚀', color: '#ff4444' },
+            { name: 'Ronaldo', emoji: '⚽', color: '#44ff44' },
+            { name: 'Messi', emoji: '🐐', color: '#4444ff' },
+            { name: 'MrBeast', emoji: '💰', color: '#ff44ff' },
+            { name: 'Taylor', emoji: '🎤', color: '#ffff44' },
+            { name: 'Drake', emoji: '🎵', color: '#44ffff' },
         ];
         
-        // Ball class
+        // Ball class - SIMPLE AND CLEAN
         class Ball {
-            constructor(x, y, vx, vy, celeb, img) {
+            constructor(x, y) {
                 this.x = x;
                 this.y = y;
-                this.vx = vx || (Math.random() - 0.5) * 5;
-                this.vy = vy || (Math.random() - 0.5) * 5;
-                this.celeb = celeb;
-                this.img = img;
-                this.radius = 35;
-                this.alive = true;
+                this.vx = (Math.random() - 0.5) * 6;
+                this.vy = (Math.random() - 0.5) * 6;
+                this.celeb = celebs[Math.floor(Math.random() * celebs.length)];
+                this.radius = 30;
             }
             
             update(speed) {
-                if (!this.alive || paused) return;
+                if (paused) return;
                 const f = speed / 7;
                 this.x += this.vx * f;
                 this.y += this.vy * f;
                 
-                // Circle boundary
+                // Bounce off circle boundary
                 const dx = this.x - cx;
                 const dy = this.y - cy;
                 const dist = Math.sqrt(dx*dx + dy*dy);
                 const maxDist = radius - this.radius;
                 
-                if (dist > maxDist && dist > 0) {
-                    const nx = dx/dist;
-                    const ny = dy/dist;
+                if (dist > maxDist) {
+                    const nx = dx / dist;
+                    const ny = dy / dist;
                     const dot = this.vx*nx + this.vy*ny;
                     this.vx -= 2*dot*nx;
                     this.vy -= 2*dot*ny;
                     this.x = cx + nx*maxDist;
                     this.y = cy + ny*maxDist;
-                    
-                    const s = Math.sqrt(this.vx*this.vx + this.vy*this.vy);
-                    if (s > 10) { this.vx = (this.vx/s)*10; this.vy = (this.vy/s)*10; }
                 }
                 
-                // Ball collision
+                // Ball-to-ball collision
                 for (let b of balls) {
-                    if (b === this || !b.alive) continue;
+                    if (b === this) continue;
                     const ddx = this.x - b.x;
                     const ddy = this.y - b.y;
                     const dd = Math.sqrt(ddx*ddx + ddy*ddy);
                     if (dd < this.radius + b.radius && dd > 0) {
                         const overlap = this.radius + b.radius - dd;
-                        const nx2 = ddx/dd;
-                        const ny2 = ddy/dd;
-                        this.x += nx2*overlap/2;
-                        this.y += ny2*overlap/2;
-                        b.x -= nx2*overlap/2;
-                        b.y -= ny2*overlap/2;
+                        this.x += (ddx/dd) * overlap/2;
+                        this.y += (ddy/dd) * overlap/2;
+                        b.x -= (ddx/dd) * overlap/2;
+                        b.y -= (ddy/dd) * overlap/2;
                         [this.vx, b.vx] = [b.vx, this.vx];
                         [this.vy, b.vy] = [b.vy, this.vy];
                     }
@@ -220,143 +172,84 @@
             }
             
             draw(ctx) {
-                if (!this.alive) return;
                 ctx.save();
                 ctx.translate(this.x, this.y);
                 
-                // Shadow
-                ctx.shadowColor = 'rgba(0,0,0,0.5)';
-                ctx.shadowBlur = 8;
-                
-                // Draw image or colored circle
+                // Draw circle
+                const grad = ctx.createRadialGradient(0, 0, 0, 0, 0, this.radius);
+                grad.addColorStop(0, this.celeb.color);
+                grad.addColorStop(1, 'rgba(0,0,0,0.5)');
+                ctx.fillStyle = grad;
                 ctx.beginPath();
                 ctx.arc(0, 0, this.radius, 0, Math.PI*2);
-                
-                if (this.img && this.img.complete && this.img.naturalWidth > 0) {
-                    ctx.clip();
-                    ctx.drawImage(this.img, -this.radius, -this.radius, this.radius*2, this.radius*2);
-                } else {
-                    ctx.fillStyle = this.celeb.color;
-                    ctx.fill();
-                    ctx.fillStyle = '#fff';
-                    ctx.font = `${this.radius*1.1}px Arial`;
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'middle';
-                    ctx.fillText(this.celeb.emoji, 0, -5);
-                }
+                ctx.fill();
                 
                 // Border
-                ctx.shadowColor = 'transparent';
                 ctx.strokeStyle = '#fff';
-                ctx.lineWidth = 2;
+                ctx.lineWidth = 3;
                 ctx.beginPath();
                 ctx.arc(0, 0, this.radius, 0, Math.PI*2);
                 ctx.stroke();
                 
+                // Emoji
+                ctx.fillStyle = '#fff';
+                ctx.font = '28px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(this.celeb.emoji, 0, -4);
+                
                 // Name
                 ctx.fillStyle = '#fff';
-                ctx.font = `bold ${this.radius*0.28}px Arial`;
-                ctx.textAlign = 'center';
-                ctx.fillText(this.celeb.name, 0, this.radius + 12);
+                ctx.font = 'bold 10px Arial';
+                ctx.fillText(this.celeb.name, 0, this.radius + 14);
                 
                 ctx.restore();
             }
             
             hitTest(px, py) {
-                const dx = px - this.x;
-                const dy = py - this.y;
-                return Math.sqrt(dx*dx + dy*dy) < this.radius + 5;
+                return Math.hypot(px - this.x, py - this.y) < this.radius + 5;
             }
         }
         
-        // Resize
         function resize() {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
-            cx = canvas.width/2;
-            cy = canvas.height/2;
-            radius = Math.min(canvas.width, canvas.height) * 0.38;
-            
-            // Keep balls inside
-            for (let b of balls) {
-                const dx = b.x - cx;
-                const dy = b.y - cy;
-                const d = Math.sqrt(dx*dx + dy*dy);
-                if (d > radius - b.radius && d > 0) {
-                    b.x = cx + (dx/d)*(radius - b.radius);
-                    b.y = cy + (dy/d)*(radius - b.radius);
-                }
+            cx = canvas.width / 2;
+            cy = canvas.height / 2;
+            radius = Math.min(canvas.width, canvas.height) * 0.4;
+            console.log('📐 Resized:', cx, cy, radius);
+        }
+        
+        function spawnBall(x, y) {
+            if (balls.length >= 30) return;
+            const bx = x || cx + (Math.random()-0.5)*radius*0.5;
+            const by = y || cy + (Math.random()-0.5)*radius*0.5;
+            balls.push(new Ball(bx, by));
+            console.log('🏀 Ball spawned! Total:', balls.length);
+        }
+        
+        function initBalls() {
+            balls = [];
+            for (let i = 0; i < 5; i++) {
+                spawnBall();
             }
+            console.log('🎱 Initialized', balls.length, 'balls');
         }
         
-        // Spawn ball
-        function spawnBall(x, y, vx, vy) {
-            if (balls.length >= 40) return;
-            const sx = x || cx + (Math.random()-0.5)*radius*0.5;
-            const sy = y || cy + (Math.random()-0.5)*radius*0.5;
-            const celeb = celebs[Math.floor(Math.random()*celebs.length)];
-            const img = customImages.length > 0 ? customImages[Math.floor(Math.random()*customImages.length)] : null;
-            balls.push(new Ball(sx, sy, vx, vy, celeb, img));
-        }
-        
-        // Draw arena
-        function drawArena() {
-            // Fill
-            const grad = ctx.createRadialGradient(cx, cy, radius*0.7, cx, cy, radius);
-            grad.addColorStop(0, 'rgba(20,22,40,0.5)');
-            grad.addColorStop(1, 'rgba(255,51,102,0.05)');
-            ctx.fillStyle = grad;
-            ctx.beginPath();
-            ctx.arc(cx, cy, radius, 0, Math.PI*2);
-            ctx.fill();
-            
-            // Border
-            ctx.strokeStyle = 'rgba(255,51,102,0.6)';
-            ctx.lineWidth = 3;
-            ctx.shadowColor = '#ff3366';
-            ctx.shadowBlur = 20;
-            ctx.beginPath();
-            ctx.arc(cx, cy, radius, 0, Math.PI*2);
-            ctx.stroke();
-            ctx.shadowBlur = 0;
-        }
-        
-        // Recording
+        // Recording functions
         function startRecording() {
             if (!canvas.captureStream) {
-                alert('Recording not supported in this browser');
+                alert('Recording not supported');
                 return;
             }
             
             recordedChunks = [];
             const stream = canvas.captureStream(60);
             
-            // Add audio if playing
-            let finalStream = stream;
-            if (audioElement && isMusicPlaying) {
-                try {
-                    const audioCtx = new AudioContext();
-                    const source = audioCtx.createMediaElementSource(audioElement);
-                    const dest = audioCtx.createMediaStreamDestination();
-                    source.connect(dest);
-                    source.connect(audioCtx.destination);
-                    const audioTrack = dest.stream.getAudioTracks()[0];
-                    if (audioTrack) {
-                        finalStream = new MediaStream([...stream.getVideoTracks(), audioTrack]);
-                    }
-                } catch(e) {}
-            }
-            
             try {
-                mediaRecorder = new MediaRecorder(finalStream, {
-                    mimeType: 'video/webm;codecs=vp9',
-                    videoBitsPerSecond: 8000000
-                });
+                mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm;codecs=vp9' });
             } catch(e) {
-                mediaRecorder = new MediaRecorder(finalStream, {
-                    mimeType: 'video/webm',
-                    videoBitsPerSecond: 8000000
-                });
+                mediaRecorder = new MediaRecorder(stream);
             }
             
             mediaRecorder.ondataavailable = e => {
@@ -371,62 +264,79 @@
                 a.download = `jhonyball-${Date.now()}.mp4`;
                 a.click();
                 URL.revokeObjectURL(url);
-                cleanupRecording();
+                stopRecordingUI();
             };
             
             mediaRecorder.start(1000);
             recording = true;
             recordingTimeLeft = recordingDuration;
+            recordingTimer = setInterval(() => {
+                recordingTimeLeft--;
+                document.getElementById('timer').textContent = 
+                    String(Math.floor(recordingTimeLeft/60)).padStart(2,'0') + ':' + 
+                    String(recordingTimeLeft%60).padStart(2,'0');
+                if (recordingTimeLeft <= 0) stopRecording();
+            }, 1000);
             
             document.getElementById('recordBtn').textContent = '⏹ Stop';
             document.getElementById('recordBtn').classList.add('recording');
             document.getElementById('status').textContent = '🔴 REC';
             document.getElementById('status').classList.add('recording');
-            
-            updateTimer();
-            recordingTimer = setInterval(() => {
-                recordingTimeLeft--;
-                updateTimer();
-                if (recordingTimeLeft <= 0) stopRecording();
-            }, 1000);
         }
         
         function stopRecording() {
             if (mediaRecorder && mediaRecorder.state === 'recording') {
                 mediaRecorder.stop();
             } else {
-                cleanupRecording();
+                stopRecordingUI();
             }
         }
         
-        function cleanupRecording() {
+        function stopRecordingUI() {
             recording = false;
             if (recordingTimer) clearInterval(recordingTimer);
             document.getElementById('recordBtn').textContent = '⏺ Record';
             document.getElementById('recordBtn').classList.remove('recording');
-            document.getElementById('status').textContent = 'LIVE';
+            document.getElementById('status').textContent = '🟢 LIVE';
             document.getElementById('status').classList.remove('recording');
             document.getElementById('timer').textContent = '00:00';
         }
         
-        function updateTimer() {
-            const m = Math.floor(recordingTimeLeft/60);
-            const s = recordingTimeLeft % 60;
-            document.getElementById('timer').textContent = 
-                String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
-        }
-        
-        // Animation
+        // Animation loop
         function animate() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Background
             ctx.fillStyle = '#0a0a14';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             
-            drawArena();
+            // Draw arena circle
+            ctx.strokeStyle = 'rgba(233,68,96,0.6)';
+            ctx.lineWidth = 3;
+            ctx.shadowColor = '#e94560';
+            ctx.shadowBlur = 20;
+            ctx.beginPath();
+            ctx.arc(cx, cy, radius, 0, Math.PI*2);
+            ctx.stroke();
+            ctx.shadowBlur = 0;
             
-            const speed = parseInt(document.getElementById('speedSlider').value);
-            for (let b of balls) b.update(speed);
-            for (let b of balls) b.draw(ctx);
+            // Fill arena
+            ctx.fillStyle = 'rgba(20,20,40,0.3)';
+            ctx.beginPath();
+            ctx.arc(cx, cy, radius, 0, Math.PI*2);
+            ctx.fill();
+            
+            // Update and draw balls
+            const speed = parseInt(document.getElementById('speedSlider').value) || 7;
+            for (let ball of balls) {
+                ball.update(speed);
+                ball.draw(ctx);
+            }
+            
+            // Log ball count occasionally
+            if (Math.random() < 0.01) {
+                console.log('🎯 Frame - Balls:', balls.length, 'Paused:', paused);
+            }
             
             requestAnimationFrame(animate);
         }
@@ -439,7 +349,7 @@
             const mx = e.clientX - rect.left;
             const my = e.clientY - rect.top;
             
-            // Check if clicking a ball
+            // Check for drag
             for (let i = balls.length-1; i >= 0; i--) {
                 if (balls[i].hitTest(mx, my)) {
                     dragBall = balls[i];
@@ -448,12 +358,13 @@
                     dragStartY = my;
                     dragBall.vx = 0;
                     dragBall.vy = 0;
+                    console.log('👆 Grabbed ball:', dragBall.celeb.name);
                     return;
                 }
             }
             
-            // Add new ball
-            if (Math.sqrt((mx-cx)**2 + (my-cy)**2) < radius - 35) {
+            // Spawn new ball
+            if (Math.hypot(mx-cx, my-cy) < radius - 30) {
                 spawnBall(mx, my);
             }
         });
@@ -469,9 +380,6 @@
             if (d < radius - dragBall.radius) {
                 dragBall.x = mx;
                 dragBall.y = my;
-            } else {
-                dragBall.x = cx + (dx/d)*(radius - dragBall.radius);
-                dragBall.y = cy + (dy/d)*(radius - dragBall.radius);
             }
         });
         
@@ -482,7 +390,13 @@
                 const my = e.clientY - rect.top;
                 dragBall.vx = (mx - dragStartX) * 0.3;
                 dragBall.vy = (my - dragStartY) * 0.3;
+                console.log('🏌️ Fling! Velocity:', dragBall.vx.toFixed(1), dragBall.vy.toFixed(1));
             }
+            isDragging = false;
+            dragBall = null;
+        });
+        
+        canvas.addEventListener('mouseleave', () => {
             isDragging = false;
             dragBall = null;
         });
@@ -492,27 +406,31 @@
             e.preventDefault();
             const t = e.touches[0];
             canvas.dispatchEvent(new MouseEvent('mousedown', { clientX: t.clientX, clientY: t.clientY }));
-        });
+        }, {passive: false});
         canvas.addEventListener('touchmove', e => {
             e.preventDefault();
             const t = e.touches[0];
             canvas.dispatchEvent(new MouseEvent('mousemove', { clientX: t.clientX, clientY: t.clientY }));
+        }, {passive: false});
+        canvas.addEventListener('touchend', () => {
+            canvas.dispatchEvent(new MouseEvent('mouseup'));
         });
-        canvas.addEventListener('touchend', () => canvas.dispatchEvent(new MouseEvent('mouseup')));
         
-        // Buttons
+        // Button controls
         document.getElementById('pauseBtn').addEventListener('click', function() {
             paused = !paused;
             this.textContent = paused ? '▶️ Play' : '⏯️ Pause';
+            console.log('⏯️ Paused:', paused);
         });
         
         document.getElementById('resetBtn').addEventListener('click', () => {
-            balls = [];
-            for (let i = 0; i < 5; i++) spawnBall();
+            initBalls();
+            console.log('🔄 Reset');
         });
         
         document.getElementById('durationSelect').addEventListener('change', function() {
             recordingDuration = parseInt(this.value);
+            console.log('⏱ Duration:', recordingDuration, 'sec');
         });
         
         document.getElementById('recordBtn').addEventListener('click', () => {
@@ -520,8 +438,53 @@
         });
         
         document.getElementById('addBtn').addEventListener('click', () => spawnBall());
-        document.getElementById('clearBtn').addEventListener('click', () => { balls = []; });
+        document.getElementById('clearBtn').addEventListener('click', () => {
+            balls = [];
+            console.log('🗑 Cleared all balls');
+        });
         
         document.getElementById('musicBtn').addEventListener('click', () => {
             document.getElementById('musicInput').click();
-    
+        });
+        
+        document.getElementById('musicInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            if (audioElement) { audioElement.pause(); }
+            audioElement = new Audio(URL.createObjectURL(file));
+            audioElement.loop = true;
+            audioElement.volume = 0.7;
+            audioElement.play().catch(e => console.log('🔇 Autoplay blocked'));
+            console.log('🎵 Music loaded:', file.name);
+        });
+        
+        // Keyboard
+        window.addEventListener('keydown', e => {
+            switch(e.key) {
+                case ' ': e.preventDefault(); paused = !paused; 
+                    document.getElementById('pauseBtn').textContent = paused ? '▶️ Play' : '⏯️ Pause'; break;
+                case 'r': initBalls(); break;
+                case 'c': balls = []; break;
+                case 'a': spawnBall(); break;
+            }
+        });
+        
+        // START EVERYTHING
+        resize();
+        initBalls();
+        animate();
+        
+        console.log('✅ JHONNYBALL is running!');
+        console.log('📊 Canvas:', canvas.width+'x'+canvas.height);
+        console.log('🎯 Arena center:', cx, cy, 'Radius:', radius);
+        console.log('🏀 Balls:', balls.length);
+        console.log('🖱️ Click canvas to add balls, drag to fling them!');
+        
+    } catch(error) {
+        console.error('❌ ERROR:', error.message);
+        console.error('Stack:', error.stack);
+        alert('Error: ' + error.message + '\n\nCheck console (F12) for details');
+    }
+    </script>
+</body>
+</html>
